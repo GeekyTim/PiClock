@@ -44,19 +44,22 @@ You also need the other files in the images directory.
 
 ##What are the Files
 This repository includes the following files:
-# PiClock.py - the clock code
-# RunClock.sh - A shell script I uses to start the clock
-# StopClock.sh - Used to stop all clock threads
+* PiClock.py - the clock code
+* RunClock.sh - A shell script I uses to start the clock
+* StopClock.sh - Used to stop all clock threads
 The 'images' directory contains images multiple images that I address individually using dictionaries (explained at a later date):
-# clockfont.png - All the characters used in the time part of the clock.
-# clocktimes8.png - The 3 hour period the weather is being displayed for (to be explained)
-# datefont.png - The font used for the date numbers
-# DoW.png - The Days of the Week
-# months.png - The months of the year
-# smallfont.png - A font used in the clock
+* clockfont.png - All the characters used in the time part of the clock.
+* clocktimes8.png - The 3 hour period the weather is being displayed for (to be explained)
+* datefont.png - The font used for the date numbers
+* DoW.png - The Days of the Week
+* months.png - The months of the year
+* smallfont.png - A font used in the clock
 The PiClock Case directory contaus the files I used for creating the case.
-# *.svg for the Perspex case
-# *.stl for the various 3d printed parts
+* *.svg for the Perspex case
+* *.stl for the various 3d printed parts
 
 ## What's Left
-Eventually I will write up what is happening in the code - this is just the first upload for those interested.  If any magazine (e.g. MagPi) is interested in an article and photos, please contact me! ;-)
+Eventually I will write up what is happening in the code - this is just the first upload for those interested.It has been written so I can redefine what appears on the clock just be redefining the dictionaries.Much of the code could be used to repurpose the 'clock' to display anything required.
+
+If any magazine (e.g. MagPi) is interested in an article and photos, please contact me! ;-)
+
