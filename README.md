@@ -63,3 +63,5 @@ Eventually I will write up what is happening in the code - this is just the firs
 
 If any magazine (e.g. MagPi) is interested in an article and photos, please contact me! ;-)
 
+# Problems
+This weekend I added in some logging because I wanted to know whether the clock was turning off and when. However, this appears to cause issues to both the PIR and network - the clock appears to disconnet from both.  Turning off logging (and currently PIR), I'm able to connect via ssh.  More time needed...
