@@ -19,7 +19,7 @@ import logging
 # Set up Logging defaults
 # -----------------------------------------------------------------------------
 logging.basicConfig(filename='clock.log', format='%(levelname)s:%(asctime)s:%(funcName)s:%(lineno)d: %(message)s',
-                    level=logging.DEBUG)
+                    level=logging.WARNING)
 
 logging.info('Starting by defining variables and dictionaries')
 
@@ -317,7 +317,7 @@ WeatherPlusDef = {'Size': (64, 16),
 # #############################################################################
 class GetWeatherData:
     def __init__(self, cityid, units, frequency, errorfrequency):
-        logging.info('Creating CetWeatherData instance')
+        #logging.info('Creating CetWeatherData instance')
         self.__cityid = cityid
         self.__units = units
         self.__refreshfrequency = frequency
@@ -331,12 +331,12 @@ class GetWeatherData:
     def get_weather_for_city_thread(self):
         while True:
             try:
-                logging.info('Getting Weather data')
+                #logging.info('Getting Weather data')
                 weatherdata = get(WeatherURLFormat.format(self.__cityid, OpenWeatherMapKey))
                 self.__weatherdatadict = weatherdata.json()
                 sleeptime = self.__refreshfrequency
             except:
-                logging.warning('Error in get_weather_for_city_thread')
+                #logging.warning('Error in get_weather_for_city_thread')
                 sleeptime = self.__errorfrequency
 
             time.sleep(sleeptime)
@@ -348,14 +348,14 @@ class GetWeatherData:
     # -------------------------------------------------------------------------
     def read_forecast_for_date(self, weather_forecast_time):
         try:
-            logging.info('Reading weather forecast')
+            #logging.info('Reading weather forecast')
             currentweather = self.__weatherdatadict
             for weatherdata in currentweather['list']:
                 if weatherdata['dt_txt'] == weather_forecast_time:
                     return weatherdata
             return {}
         except:
-            logging.warning('Error read_forecast_for_date(%s)', weather_forecast_time)
+            #logging.warning('Error read_forecast_for_date(%s)', weather_forecast_time)
             return {}
 
     # -------------------------------------------------------------------------
@@ -364,11 +364,11 @@ class GetWeatherData:
     # readable (list) format
     # -------------------------------------------------------------------------
     def get_readable_forecast(self, weather_forecast_time):
-        logging.info('Putting the weather in readable format')
+        #logging.info('Putting the weather in readable format')
         weatherdata = {}
         weatherdict = self.read_forecast_for_date(weather_forecast_time)
         if weatherdict == {}:
-            logging.warning('The json was blank!')
+            #logging.warning('The json was blank!')
             return {}
         try:
             # weatherdata['cloudiness'] = weatherdict['clouds']['all']
@@ -404,7 +404,7 @@ class GetWeatherData:
 
             return weatherdata
         except:
-            logging.warning('Error get_readable_forecast')
+            #logging.warning('Error get_readable_forecast')
             return {}
 
     # -------------------------------------------------------------------------
@@ -504,7 +504,7 @@ class GetWeatherData:
 # #############################################################################
 class Canvas:
     def __init__(self, canvassize):
-        logging.info('Creating new Canvas instance')
+        #logging.info('Creating new Canvas instance')
         # Create a new canvas of size (x, y)
         self.Image = Image.new('RGB', canvassize)
 
@@ -1306,7 +1306,7 @@ class PIR:
 # matrix = Adafruit_RGBmatrix(32, 4)  # for the 64 x 32 matrix by 2
 # -----------------------------------------------------------------------------
 MyLEDs = LEDMatrix(32, 4, 64, 64)
-MyLEDs.matrix.SetPWMBits(5)
+#MyLEDs.matrix.SetPWMBits(5)
 
 # -----------------------------------------------------------------------------
 # Initialise the Weather Forecast retrieval class
