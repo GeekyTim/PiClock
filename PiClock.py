@@ -16,6 +16,52 @@ import json
 import logging
 
 # -----------------------------------------------------------------------------
+# To check if we're in demo mode (i.e. not home network, IP 192.168.13.117)
+import socket
+import fcntl
+import struct
+
+
+def get_interface_ip(ifname):
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    return socket.inet_ntoa(fcntl.ioctl(s.fileno(), 0x8915, struct.pack('256s', ifname[:15]))[20:24])
+
+
+def get_lan_ip():
+    ip = socket.gethostbyname(socket.gethostname())
+    if ip.startswith("127."):
+        interfaces = [
+            "wlan0",
+            "eth0",
+            "eth1",
+            "eth2",
+            "wlan1",
+            "wifi0",
+            "ath0",
+            "ath1",
+            "ppp0",
+        ]
+        for ifname in interfaces:
+            try:
+                ip = get_interface_ip(ifname)
+                break
+            except IOError:
+                pass
+
+    return ip
+
+
+if (get_lan_ip() == "192.168.13.117"):
+    demodata = []
+    print "Got IP", demodata
+else:
+    with open('/home/pi/PiClock/demoforecast.json') as demodatafile:
+        demodata = json.load(demodatafile)
+
+# -----------------------------------------------------------------------------
+
+
+# -----------------------------------------------------------------------------
 # Set up Logging defaults
 # -----------------------------------------------------------------------------
 logging.basicConfig(filename='clock.log', format='%(levelname)s:%(asctime)s:%(funcName)s:%(lineno)d: %(message)s',
@@ -316,12 +362,13 @@ WeatherPlusDef = {'Size': (64, 16),
 # defined frequency and stored in __weatherdatadict
 # #############################################################################
 class GetWeatherData:
-    def __init__(self, cityid, units, frequency, errorfrequency):
-        #logging.info('Creating CetWeatherData instance')
+    def __init__(self, cityid, units, frequency, errorfrequency, demodata):
+        # logging.info('Creating CetWeatherData instance')
         self.__cityid = cityid
         self.__units = units
         self.__refreshfrequency = frequency
         self.__errorfrequency = errorfrequency
+        self.__demodata = demodata
 
         self.__weatherdatadict = []
 
@@ -331,12 +378,18 @@ class GetWeatherData:
     def get_weather_for_city_thread(self):
         while True:
             try:
-                #logging.info('Getting Weather data')
-                weatherdata = get(WeatherURLFormat.format(self.__cityid, OpenWeatherMapKey))
-                self.__weatherdatadict = weatherdata.json()
+                # logging.info('Getting Weather data')
+                if (self.__demodata == []):
+                    weatherdata = get(WeatherURLFormat.format(self.__cityid, OpenWeatherMapKey))
+                    self.__weatherdatadict = weatherdata.json()
+                    print "Real Weather"
+                else:
+                    self.__weatherdatadict = self.__demodata
+                    print "Demo Data"
+
                 sleeptime = self.__refreshfrequency
             except:
-                #logging.warning('Error in get_weather_for_city_thread')
+                # logging.warning('Error in get_weather_for_city_thread')
                 sleeptime = self.__errorfrequency
 
             time.sleep(sleeptime)
@@ -348,14 +401,14 @@ class GetWeatherData:
     # -------------------------------------------------------------------------
     def read_forecast_for_date(self, weather_forecast_time):
         try:
-            #logging.info('Reading weather forecast')
+            # logging.info('Reading weather forecast')
             currentweather = self.__weatherdatadict
             for weatherdata in currentweather['list']:
                 if weatherdata['dt_txt'] == weather_forecast_time:
                     return weatherdata
             return {}
         except:
-            #logging.warning('Error read_forecast_for_date(%s)', weather_forecast_time)
+            # logging.warning('Error read_forecast_for_date(%s)', weather_forecast_time)
             return {}
 
     # -------------------------------------------------------------------------
@@ -364,11 +417,11 @@ class GetWeatherData:
     # readable (list) format
     # -------------------------------------------------------------------------
     def get_readable_forecast(self, weather_forecast_time):
-        #logging.info('Putting the weather in readable format')
+        # logging.info('Putting the weather in readable format')
         weatherdata = {}
         weatherdict = self.read_forecast_for_date(weather_forecast_time)
         if weatherdict == {}:
-            #logging.warning('The json was blank!')
+            # logging.warning('The json was blank!')
             return {}
         try:
             # weatherdata['cloudiness'] = weatherdict['clouds']['all']
@@ -404,7 +457,7 @@ class GetWeatherData:
 
             return weatherdata
         except:
-            #logging.warning('Error get_readable_forecast')
+            # logging.warning('Error get_readable_forecast')
             return {}
 
     # -------------------------------------------------------------------------
@@ -504,7 +557,7 @@ class GetWeatherData:
 # #############################################################################
 class Canvas:
     def __init__(self, canvassize):
-        #logging.info('Creating new Canvas instance')
+        # logging.info('Creating new Canvas instance')
         # Create a new canvas of size (x, y)
         self.Image = Image.new('RGB', canvassize)
 
@@ -1306,12 +1359,12 @@ class PIR:
 # matrix = Adafruit_RGBmatrix(32, 4)  # for the 64 x 32 matrix by 2
 # -----------------------------------------------------------------------------
 MyLEDs = LEDMatrix(32, 4, 64, 64)
-#MyLEDs.matrix.SetPWMBits(5)
+# MyLEDs.matrix.SetPWMBits(5)
 
 # -----------------------------------------------------------------------------
 # Initialise the Weather Forecast retrieval class
 # -----------------------------------------------------------------------------
-TheWeather = GetWeatherData(CityLocation, WeatherUnits, 60 * 90, 60 * 10)
+TheWeather = GetWeatherData(CityLocation, WeatherUnits, 60 * 90, 60 * 10, demodata)
 
 # -----------------------------------------------------------------------------
 # Define the Matrix Layout by initialising the Clock and Weather classes
