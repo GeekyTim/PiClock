@@ -59,7 +59,7 @@ The PiClock Case directory contaus the files I used for creating the case.
 * *.stl for the various 3d printed parts
 
 ## What's Left
-Eventually I will write up what is happening in the code - this is just the first upload for those interested.It has been written so I can redefine what appears on the clock just be redefining the dictionaries.Much of the code could be used to repurpose the 'clock' to display anything required.
+Eventually I will write up what is happening in the code - this is just the first upload for those interested. It has been written so I can redefine what appears on the clock just be redefining the dictionaries.Much of the code could be used to repurpose the 'clock' to display anything required.
 
 If any magazine (e.g. MagPi) is interested in an article and photos, please contact me! ;-)
 
