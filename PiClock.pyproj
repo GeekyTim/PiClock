@@ -1,0 +1,69 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{855d9054-22ef-4262-8bfd-89df09875637}</ProjectGuid>
+    <ProjectHome />
+    <StartupFile>PiClock.py</StartupFile>
+    <SearchPath />
+    <WorkingDirectory>.</WorkingDirectory>
+    <OutputPath>.</OutputPath>
+    <ProjectTypeGuids>{888888a0-9f3d-457c-b088-3a5042f75d52}</ProjectTypeGuids>
+    <LaunchProvider>Standard Python launcher</LaunchProvider>
+    <InterpreterId>Global|PythonCore|3.6</InterpreterId>
+    <IsWindowsApplication>False</IsWindowsApplication>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'" />
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'" />
+  <PropertyGroup>
+    <VisualStudioVersion Condition=" '$(VisualStudioVersion)' == '' ">10.0</VisualStudioVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="canvas.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="pir.py" />
+    <Compile Include="testpir.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="weather.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="pir_gpio.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="clock.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ledmatrix.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="getweatherdata.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="PiClock.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="images\clockfont.png" />
+    <Content Include="images\clocktimes8.png" />
+    <Content Include="images\datefont.png" />
+    <Content Include="images\DoW.png" />
+    <Content Include="images\months.png" />
+    <Content Include="images\OWMweather.png" />
+    <Content Include="images\OWMweather16.png" />
+    <Content Include="images\smallfont.png" />
+    <Content Include="images\weatherwarn.png" />
+    <Content Include="PiClock Case\Case-back.svg" />
+    <Content Include="PiClock Case\Case-front.svg" />
+    <Content Include="PiClock Case\Case.svg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="images" />
+    <Folder Include="PiClock Case" />
+  </ItemGroup>
+  <ItemGroup>
+    <InterpreterReference Include="Global|PythonCore|3.6" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
+</Project>
