@@ -1,5 +1,7 @@
 # PiClock
 
+The code for this project has been updated to work with the latest matrix drivers.
+
 ## Requirements
 The PiClock is a weather display made with:
 * A Raspberry Pi model 2 B
