@@ -24,9 +24,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="pir.py" />
-    <Compile Include="testpir.py">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="weather.py">
       <SubType>Code</SubType>
     </Compile>

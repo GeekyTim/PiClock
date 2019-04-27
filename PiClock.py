@@ -4,16 +4,13 @@
 # Import Libraries
 # -----------------------------------------------------------------------------
 # -- Standard Libraries
-import math
-from io import StringIO
 import time
-from datetime import datetime, timedelta
 import threading
-
-from PIL import Image, ImageEnhance
-
-import json
 import logging
+from PIL import Image, ImageEnhance
+import RPi.GPIO as GPIO
+
+# Library from https://github.com/hzeller/rpi-rgb-led-matrix
 from rgbmatrix import RGBMatrix, RGBMatrixOptions
 
 # -- My own libraries
@@ -23,54 +20,14 @@ from pir_gpio import PIR
 from getweatherdata import GetWeatherData
 from weather import Weather
 
-# -----------------------------------------------------------------------------
-# To check if we're in demo mode (i.e. not home network, IP 192.168.13.117)
-#import socket
-#import fcntl
-#import struct
-
-
-#def get_interface_ip(ifname):
-#    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-#    return socket.inet_ntoa(fcntl.ioctl(s.fileno(), 0x8915, struct.pack('256s', ifname[:15]))[20:24])
-
-
-#def get_lan_ip():
-#    ip = socket.gethostbyname(socket.gethostname())
-#    if ip.startswith("127."):
-#        interfaces = [
-#            "wlan0",
-#            "eth0",
-#            "eth1",
-#            "eth2",
-#            "wlan1",
-#            "wifi0",
-#            "ath0",
-#            "ath1",
-#            "ppp0",
-#        ]
-#        for ifname in interfaces:
-#            try:
-#                ip = get_interface_ip(ifname)
-#                break
-#            except IOError:
-#                pass
-
-#    return ip
-
-
-#if (get_lan_ip() == "192.168.13.26"):
-#    demodata = []
-#    print("Got IP"), demodata
-#else:
-#    with open('/home/pi/PiClock/demoforecast.json') as demodatafile:
-#        demodata = json.load(demodatafile)
-# -----------------------------------------------------------------------------
+# Set up GPIO
+GPIO.setmode(GPIO.BCM)
+GPIO.setwarnings(False)
 
 # -----------------------------------------------------------------------------
 # Set up Logging defaults
 # -----------------------------------------------------------------------------
-logging.basicConfig(filename='clock.log', format='%(levelname)s:%(asctime)s:%(funcName)s:%(lineno)d: %(message)s', level=logging.INFO)
+logging.basicConfig(filename='/home/pi/PiClock/clock.log', format='%(levelname)s:%(asctime)s:%(funcName)s:%(lineno)d: %(message)s', level=logging.INFO)
 logging.info('Starting by defining variables and dictionaries')
 
 # -----------------------------------------------------------------------------
@@ -80,6 +37,8 @@ CityLocation = 2639964  # Potton
 WeatherUnits = 'imperial'
 WeatherURLFormat = 'http://api.openweathermap.org/data/2.5/forecast?id={}&APPID={}'
 OpenWeatherMapKey = '7df1a4b48bacd8bfd001012c1c7878f0'
+SecondsBetweenWeatherRefresh = 3600
+SecondsBetweemWeatherRefreshOnError = 60
 
 # -----------------------------------------------------------------------------
 # Images
@@ -323,17 +282,17 @@ rotatesmallweatherinterval = 5
 # The format of the 'def' dictionary is:
 # 'element':(TopLeftX, TopLeftY, ImageGallery, ImageGalleryPositions)
 # ----------------------------------------------------------------------------------------------------------------------
-TimeDef = {'Size': (36, 16),
+TimeCanvas = {'Size': (36, 16),
            'Time': (0, 0, ClockImage, ClockImagePositions),
            'AutoDraw': True}
 
-DateDef = {'Size': (28, 16),
+DateCanvas = {'Size': (28, 16),
            'DoW': (0, 0, DoWImage, DoWImagePositions),
            'Day': (17, 0, DateImage, DateImagePositions),
            'Month': (0, 8, MonthImage, MonthImagePositions),
            'AutoDraw': True}
 
-WeatherDef = {'Size': (64, 32),
+WeatherCanvas = {'Size': (64, 32),
               'WeatherIcon': (32, 0, WeatherImage32, WeatherImage32Positions),
               'MaxTemp': (0, 16, TemperatureImage, TemperatureImagePositions),
               'MinTemp': (0, 24, TemperatureImage, TemperatureImagePositions),
@@ -344,7 +303,7 @@ WeatherDef = {'Size': (64, 32),
               'WeatherTime': (0, 4, WeatherClockImage, WeatherClockImagePositions),
               'AutoDraw': True}
 
-WeatherPlusDef = {'Size': (64, 16),
+WeatherPlusCanvas = {'Size': (64, 16),
                   'WeatherIcon': (48, 0, WeatherImage16, WeatherImage16Positions),
                   'MaxTemp': (16, 0, TemperatureImage, TemperatureImagePositions),
                   'MinTemp': (16, 8, TemperatureImage, TemperatureImagePositions),
@@ -358,7 +317,6 @@ WeatherPlusDef = {'Size': (64, 16),
 # -----------------------------------------------------------------------------
 # Initialise the PIR Detection class
 # -----------------------------------------------------------------------------
-#print("initialising PIR")
 logging.info('Initialising PIR')
 MovementPIR = PIR(0, pirpin, turnscreenoffdelay)
 
@@ -381,33 +339,34 @@ LEDFormat = {'matrixRows':32,
 logging.info('Initialise Matrix')
 MyLEDs = LEDMatrix(LEDFormat)
 
-MatrixPositions = {'Time': (0,0),
+CanvasPositions = {'Time': (0,0),
                    'Date': (37,0),
                    'WeatherNow': (0,16),
                    'WeatherPlus3': (0, 48),
                    'WeatherPlus6': (0, 48),
                    'WeatherPlus9': (0, 48)}
 
+# Tell the PIR sensor the LED Object
 MovementPIR.pir_set_matrix(MyLEDs)
 
 # -----------------------------------------------------------------------------
 # Initialise the Weather Forecast retrieval class
 # -----------------------------------------------------------------------------
 logging.info('Initialising TheWeather')
-TheWeather = GetWeatherData(OpenWeatherMapKey, WeatherURLFormat, CityLocation, WeatherUnits, 3600, 60)
+TheWeather = GetWeatherData(OpenWeatherMapKey, WeatherURLFormat, CityLocation, WeatherUnits, SecondsBetweenWeatherRefresh, SecondsBetweemWeatherRefreshOnError)
 
 # -----------------------------------------------------------------------------
 # Define the Matrix Layout by initialising the Clock and Weather classes
 # -----------------------------------------------------------------------------
 logging.info('Initialising Time/Date')
-Time = Clock(MyLEDs, MatrixPositions['Time'], TimeDef, 12)
-Date = Clock(MyLEDs, MatrixPositions['Date'], DateDef, -1)
+Time = Clock(MyLEDs, CanvasPositions['Time'], TimeCanvas, 12)
+Date = Clock(MyLEDs, CanvasPositions['Date'], DateCanvas, -1)
 
 logging.info('Initialising Weather Now')
-WeatherNow = Weather(MyLEDs, MatrixPositions['WeatherNow'], WeatherDef, TheWeather, 0, refreshweatherinterval)
-WeatherPlus3 = Weather(MyLEDs, MatrixPositions['WeatherPlus3'], WeatherPlusDef, TheWeather, 3, refreshweatherinterval)
-WeatherPlus6 = Weather(MyLEDs, MatrixPositions['WeatherPlus6'], WeatherPlusDef, TheWeather, 6, refreshweatherinterval)
-WeatherPlus9 = Weather(MyLEDs, MatrixPositions['WeatherPlus9'], WeatherPlusDef, TheWeather, 9, refreshweatherinterval)
+WeatherNow = Weather(MyLEDs, CanvasPositions['WeatherNow'], WeatherCanvas, 0, refreshweatherinterval, TheWeather)
+WeatherPlus3 = Weather(MyLEDs, CanvasPositions['WeatherPlus3'], WeatherPlusCanvas, 3, refreshweatherinterval, TheWeather)
+WeatherPlus6 = Weather(MyLEDs, CanvasPositions['WeatherPlus6'], WeatherPlusCanvas, 6, refreshweatherinterval, TheWeather)
+WeatherPlus9 = Weather(MyLEDs, CanvasPositions['WeatherPlus9'], WeatherPlusCanvas, 9, refreshweatherinterval, TheWeather)
 
 # -----------------------------------------------------------------------------
 # Define the threads
@@ -415,6 +374,7 @@ WeatherPlus9 = Weather(MyLEDs, MatrixPositions['WeatherPlus9'], WeatherPlusDef, 
 logging.info('Initialising Threads')
 
 GetWeatherThread = threading.Thread(target=TheWeather.get_weather_for_city_thread, args=())
+
 TimeThread = threading.Thread(target=Time.update_time_canvas, args=())
 DateThread = threading.Thread(target=Date.update_date_canvas, args=())
 WeatherThreadNow = threading.Thread(target=WeatherNow.update_weather_canvas_thread, args=())
@@ -438,28 +398,31 @@ TimeThread.daemon = True
 TimeThread.start()
 DateThread.daemon = True
 DateThread.start()
-
 time.sleep(1)
 
 WeatherThreadNow.daemon = True
 WeatherThreadNow.start()
 time.sleep(1)
+
 WeatherThread3.daemon = True
 WeatherThread3.start()
 time.sleep(1)
+
 WeatherThread6.daemon = True
 WeatherThread6.start()
 time.sleep(1)
+
 WeatherThread9.daemon = True
 WeatherThread9.start()
 time.sleep(1)
 
 RotateWeather.start()
+
 PIRThread.daemon = True
 PIRThread.start()
 
 logging.info('Let`s go loopy!')
-print('Let`s go loopy!')
+
 # Forever!
 while True:
     time.sleep(3600)

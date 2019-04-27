@@ -1,9 +1,9 @@
 from rgbmatrix import RGBMatrix, RGBMatrixOptions
-from canvas import Canvas
 from PIL import Image, ImageEnhance
 import logging
-
 import time
+
+from canvas import Canvas
 
 # #############################################################################
 # Class: LEDMatrix
@@ -31,25 +31,19 @@ class LEDMatrix:
         options.pwm_lsb_nanoseconds = 130
         options.led_rgb_sequence = "RGB"
         options.show_refresh_rate = 0
-        #options.daemon = 1
 
         self.__MatrixID = RGBMatrix(options = options)
-        #LEDMatrix.matrix = Adafruit_RGBmatrix(xsize, chainlength)
-
+        
         self.__MatrixID.Clear()
 
         xsize = self.__MatrixID.width
         ysize = self.__MatrixID.height
-        #self.__MatrixID = LEDMatrix
 
         self.__LEDXSize = xsize
         self.__LEDYSize = ysize
 
         self.__LEDXMax = xsize - 1
         self.__LEDYMax = ysize - 1
-
-        #self.__LEDRealX = LEDFormat['matrixCols']
-        #self.__LEDYSplit = int((ysize /LEDFormat['matrixCount']) - 1)
 
         self.__DrawOnMatrix = True
 
@@ -82,50 +76,6 @@ class LEDMatrix:
             self.__FadeMatrixCanvas.Image.paste(fadedimage)
             self.paste_canvas_to_matrix((0, 0), self.__FadeMatrixCanvas, True)
             time.sleep(0.1)
-
-    # -------------------------------------------------------------------------
-    # convertxy
-    # Convert the x,y coordinates from 128x32 to 64x64
-    # Chaining two 64x64 screens together produces a 128x32 screen:
-    # -------------------
-    # | 63x32  | 64x32  |
-    # -------------------
-    # But is arranged one on top of the other:
-    # ----------
-    # | 64x32  | ->
-    # ----------   | Flips over second screen
-    # | 64x32  | <-
-    # ----------
-    # Therefore we need to convert the 128x32 coordinates to make the second
-    # screen appear below the first.
-    # We will also take the opportunity to limit x and y to be below 63.
-    # Negative x & y are allowed so that images can be drawn off the top and
-    # left edges
-    # -------------------------------------------------------------------------
-    #def convertxy(self, x, y):
-    #    if y > self.__LEDYSize:
-    #        y1 = y
-    #        x1 = x
-    #    elif 0 <= y < self.__LEDYSplit:
-    #        y1 = y
-    #        if x > self.__LEDXMax:
-    #            x1 = self.__LEDRealX
-    #        else:
-    #            x1 = x
-    #    elif self.__LEDYSplit < y <= self.__LEDYMax:
-    #        y1 = self.__LEDYMax - y
-    #        if x > self.__LEDXMax:
-    #            x1 = self.__LEDRealX
-    #        else:
-    #            x1 = self.__LEDRealX - 1 - x
-    #    else:
-    #        y1 = y
-    #        if x > self.__LEDXMax:
-    #            x1 = self.__LEDRealX
-    #        else:
-    #            x1 = x
-
-    #    return (x1, y1)
 
     # -------------------------------------------------------------------------
     # paste_to_matrix_canvas
@@ -176,44 +126,8 @@ class LEDMatrix:
             ledimagexend = ledimagexstart + ledimagexsize - 1
             ledimageyend = ledimageystart + ledimageysize - 1
 
-            # If the image is off the screen, don't draw any of it
-            #if ledimagexstart > self.__LEDXMax or ledimageystart > self.__LEDYMax or ledimagexend < 0 or ledimageyend < 0:
-            #    return
-
             self.__MatrixBuffer.SetImage(canvasimage.Image, ledimagexstart, ledimageystart)
             self.__MatrixID.SwapOnVSync(self.__MatrixBuffer)
-
-            ## Draw the image in the top part of the screen, if there is any
-            #if ledimageystart <= self.__LEDYSplit:
-            #    # Crop it to the top half of the screen
-            #    topimagebox = (0, 0, min(self.__LEDXSize - ledimagexstart, ledimagexsize),
-            #                   min(self.__LEDYSplit + 1 - ledimageystart, ledimageysize))
-            #    topimage = canvasimage.Image.crop(topimagebox)
-            #    topimage.load()
-
-            #    # Convert iX, iY into LED coordinates
-            #    #ledimagexy = self.convertxy(ledimagexstart, ledimageystart)
-            #    # Draw the top image
-            #    #matrix.SetImage(topimage, ledimagexy[0], ledimagexy[1])
-            #    matrix.SetImage(topimage, ledimagexstart, ledimageystart)
-
-            ## Draw the image in the bot6tom part of the screen, if there is any
-            #if ledimageyend > self.__LEDYSplit:
-            #    # Crop it to the bottom half of the screen
-            #    bottomimagestarty = ledimageyend - self.__LEDYSplit
-            #    bottomimagebox = (0, min(self.__LEDYSplit + 1 - ledimageystart, ledimageysize), ledimagexsize,
-            #                      ledimageysize)
-            #    bottomimage = canvasimage.Image.crop(bottomimagebox)
-            #    bottomimage.load()
-            #    bottomimage = bottomimage.rotate(180)
-            #    bottomimage.load()
-
-            #    # Convert the position of the bottom image to LED coordinates
-            #    #ledimagexy = self.convertxy(ledimagexend, ledimageyend)
-
-            #    # Draw the bottom image
-            #    #LEDMatrix.matrix.SetImage(bottomimage, ledimagexy[0], ledimagexy[1]) #.im.id
-            #    matrix.SetImage(bottomimage, ledimagexy[0], ledimagexy[1]) #.im.id
 
     # -------------------------------------------------------------------------
     # rotatecanvases

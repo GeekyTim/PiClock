@@ -1,7 +1,8 @@
 import logging
-from canvas import Canvas
 from datetime import datetime, timedelta
 import time
+
+from canvas import Canvas
 
 # #############################################################################
 # Class: Clock
