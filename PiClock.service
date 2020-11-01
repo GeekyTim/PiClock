@@ -1,0 +1,15 @@
+[Unit]
+Description=PiClock
+After=multi-user.target
+
+[Service]
+Type=idle
+
+User=pi
+ExecStart=/usr/bin/sudo /usr/bin/python3 /home/pi/PiClock/code/PiClock.py
+
+Restart=always
+RestartSec=0
+
+[Install]
+WantedBy=multi-user.target
